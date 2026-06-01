@@ -1,0 +1,132 @@
+# Solar — solar-system-db front end
+
+A clean, public, server-rendered astronomy reference for the solar system:
+planets, moons, dwarf planets, asteroids, comets, trans-Neptunian objects and
+planetary rings. It is a **front end only** — all data comes from the read-only
+[`wizzouk2/solar-system-db`](https://github.com/wizzouk2/solar-system-db) REST
+API. There is no database, no auth, no user content.
+
+This is an **astronomy** site, not astrology.
+
+The full product brief lives in [`BRIEF.md`](BRIEF.md). Deployment notes are in
+[`DEPLOYMENT.md`](DEPLOYMENT.md).
+
+## Stack
+
+- **Laravel 13** + **Livewire 4** (full-page components) + **Alpine** (bundled with Livewire)
+- **Tailwind CSS 4** via the Vite plugin; self-hosted **Inter** + **Newsreader** fonts (no runtime Google Fonts)
+- **PHP 8.3+** (developed on 8.4)
+- **Pest 4** for tests
+- No database: sessions and cache use the filesystem. All data is fetched from the API and cached.
+
+## Local development
+
+Uses [Laravel Herd](https://herd.laravel.com). The project is expected to be
+reachable at `https://solar-system.test` so OG / share previews can be tested
+over real TLS.
+
+```bash
+composer install
+npm install
+cp .env.example .env        # then set API_BASE_URL + APP_URL (see below)
+php artisan key:generate
+npm run build               # or `npm run dev` for HMR
+```
+
+### Pointing at the backend
+
+Everything keys off two env vars — nothing about the backend is hard-coded:
+
+| Var            | Purpose                                              | Example                                  |
+| -------------- | ---------------------------------------------------- | ---------------------------------------- |
+| `API_BASE_URL` | The backend REST API root                            | `https://sol.wickedsick.com/api/v1`      |
+| `APP_URL`      | This site's public URL (canonical/OG/sitemap/JSON-LD)| `https://sol.wickedsick.com`             |
+
+**Running the backend locally for development.** The backend repo can be cloned
+and run alongside this one. It ships a committed SQLite database and a FastAPI
+server:
+
+```bash
+# in a clone of wizzouk2/solar-system-db
+python -m venv .venv
+.venv/bin/pip install "fastapi" "uvicorn[standard]" "slowapi"
+API_PORT=8003 .venv/bin/python api/main.py
+```
+
+Then set `API_BASE_URL=http://127.0.0.1:8003/api/v1` in `.env`. A snapshot of
+the OpenAPI spec is kept at [`docs/openapi.snapshot.json`](docs/openapi.snapshot.json)
+for reference, but the live `/openapi.json` is always the source of truth.
+
+## How it's put together
+
+### The data layer (`app/Services/SolarApi/`)
+
+- **`SolarApiClient`** — the single gateway to the backend. One public method per
+  endpoint (`objects()`, `object()`, `moons()`, `rings()`, `search()`,
+  `position()`, `stats()`, …), each returning typed, immutable DTOs from
+  `app/Services/SolarApi/Data/`.
+- **Caching** is aggressive and config-driven (`config/services.php` → `solar.cache`):
+  reference data 24h, catalogue listings 6h, positions 5m, a health probe 30s.
+  Reads use **stale-while-revalidate** — a soft-stale entry is served instantly
+  and refreshed out of band by the `RefreshSolarCache` queue job (runs inline on
+  the `sync` driver locally; use a real queue in production).
+- **Graceful degradation** — a 404 returns `null`/empty (clean "not found"); an
+  unreachable backend throws `SolarApiUnavailableException`, which pages catch to
+  render a calm inline panel (`<x-api-down>`) while the rest of the page keeps
+  working. The request is never crashed and no stack trace is ever shown.
+- Pagination is **cursor-style** (the backend returns no total): the client
+  over-fetches one row to learn whether a next page exists.
+
+### Routes & pages
+
+Every page is a **full-page Livewire component** (`app/Livewire/`), so the
+initial response is fully server-rendered HTML — good for SEO — with Livewire
+adding interactivity (filters, search-as-you-type, sortable moon tables) on top.
+Filter/search/page state lives in the **URL**, so every view is linkable.
+
+| Route                              | Component                  |
+| ---------------------------------- | -------------------------- |
+| `/`                                | `Home`                     |
+| `/objects`, `/objects/{slug}`      | `Objects\Index`, `Objects\Show` |
+| `/planets`, `/planets/{slug}`      | `Planets\Index`, `Objects\Show` |
+| `/dwarf-planets` `/asteroids` `/comets` `/tnos` | `Category` |
+| `/search`                          | `SearchPage`               |
+| `/about`, `/api`                   | `AboutPage`, `ApiPage`     |
+| `/random`                          | `RandomObjectController`   |
+| `/sitemap.xml`, `/robots.txt`      | `SitemapController`, `RobotsController` |
+
+Object permalinks use the backend's stable `id` as the slug (e.g.
+`/objects/planet-saturn`). `/planets/{slug}` reuses the object template but
+canonicalises to `/objects/{id}` so the two never compete in search.
+
+### Adding a new route
+
+1. Add a `route()` in `routes/web.php` pointing at a Livewire component class.
+2. Create the component in `app/Livewire/` and its view in `resources/views/livewire/`.
+3. In `render()`, call `SolarApiClient`, wrap calls in `try { … } catch (SolarApiException)`
+   and pass an `$apiDown` flag to the view (render `<x-api-down>` when true).
+4. Set page metadata with `app(\App\Support\Seo::class)->title(…)->description(…)`.
+
+### Flushing caches
+
+```bash
+php artisan cache:clear      # clears all API response caches + the sitemap
+```
+
+Cache TTLs are tunable via `SOLAR_CACHE_*` env vars (see `config/services.php`).
+
+## Tests
+
+```bash
+php artisan test             # or: ./vendor/bin/pest
+```
+
+Tests use `Http::fake` (helpers in `tests/Pest.php`) and never touch the
+network. Coverage focuses on the bits that would silently rot: the API client
+(DTO mapping, pagination, caching, 404 → null, unreachable → exception) and a
+smoke test of every route, including the backend-down degradation path.
+
+## Conventions
+
+- Conventional Commits; one PR per route or concern.
+- `./vendor/bin/pint` to format.

@@ -1,0 +1,74 @@
+<?php
+
+declare(strict_types=1);
+
+beforeEach(fn () => fakeSolar());
+
+it('renders every public P0 route', function (string $uri) {
+    $this->get($uri)
+        ->assertOk()
+        ->assertSee(config('site.name'), escape: false);
+})->with([
+    'home' => '/',
+    'objects index' => '/objects',
+    'objects filtered' => '/objects?type=asteroid&named=1&page=1',
+    'object detail' => '/objects/planet-saturn',
+    'planet detail' => '/planets/planet-saturn',
+    'planets landing' => '/planets',
+    'dwarf planets' => '/dwarf-planets',
+    'asteroids' => '/asteroids',
+    'comets' => '/comets',
+    'tnos' => '/tnos',
+    'search' => '/search?q=ceres',
+    'about' => '/about',
+    'api' => '/api',
+]);
+
+it('puts the object name and structured data on a detail page', function () {
+    $this->get('/objects/planet-saturn')
+        ->assertOk()
+        ->assertSee('Saturn')
+        ->assertSee('Where is it now')
+        ->assertSee('"@type":"Thing"', escape: false)
+        ->assertSee('canonical', escape: false);
+});
+
+it('returns 404 for an unknown object when the backend is healthy', function () {
+    $this->get('/objects/missing-object')->assertNotFound();
+});
+
+it('redirects /random to an object detail page', function () {
+    $this->get('/random')->assertRedirectContains('/objects/');
+});
+
+it('serves a robots.txt that points at the sitemap', function () {
+    $this->get('/robots.txt')
+        ->assertOk()
+        ->assertSee('Sitemap:')
+        ->assertSee('Disallow: /search');
+});
+
+it('serves an XML sitemap including object URLs', function () {
+    $this->get('/sitemap.xml')
+        ->assertOk()
+        ->assertHeader('Content-Type', 'application/xml; charset=UTF-8')
+        ->assertSee('<urlset', escape: false)
+        ->assertSee('/objects/', escape: false);
+});
+
+it('stays up and shows a degradation panel when the backend is down', function () {
+    fakeSolarDown();
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('Browse by kind')           // the rest of the page still works
+        ->assertSee('reach the catalogue');     // the calm degradation panel
+});
+
+it('does not 404 a detail page when the backend is down', function () {
+    fakeSolarDown();
+
+    $this->get('/objects/planet-saturn')
+        ->assertOk()
+        ->assertSee('unavailable');
+});

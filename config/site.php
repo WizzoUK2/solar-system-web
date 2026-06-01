@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Branding and editorial constants for the public site. Kept out of code so the
+ * wordmark, palette and external links can move without touching Blade.
+ */
+return [
+    'name' => env('APP_NAME', 'Solar'),
+    'tagline' => 'A field guide to the solar system',
+    'description' => 'A clean, public reference for the solar system — planets, '
+        .'moons, dwarf planets, asteroids, comets and trans-Neptunian objects. '
+        .'Sourced from NASA/JPL and the IAU Minor Planet Center. For astronomy, '
+        .'not astrology.',
+
+    // Accent palette (also mirrored in resources/css/app.css @theme).
+    'accent' => '#E0B872', // amber — highlights
+    'link' => '#7AB8FF',   // cool blue — links / active states
+
+    // External references surfaced in the footer and the /about + /api pages.
+    'backend_repo' => 'https://github.com/wizzouk2/solar-system-db',
+    'api_docs_url' => env('API_DOCS_URL'), // backend /docs; falls back to base_url host
+    'contact_email' => env('CONTACT_EMAIL', 'hello@wickedsick.com'),
+];
