@@ -9,6 +9,7 @@ use App\Livewire\Category;
 use App\Livewire\Home;
 use App\Livewire\Objects\Index as ObjectsIndex;
 use App\Livewire\Objects\Show as ObjectsShow;
+use App\Livewire\Orrery;
 use App\Livewire\Planets\Index as PlanetsIndex;
 use App\Livewire\SearchPage;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +33,9 @@ Route::get('/tnos', Category::class)->defaults('kind', 'tno')->name('tnos');
 
 // Search
 Route::get('/search', SearchPage::class)->name('search');
+
+// Interactive orrery (2D solar-system map at a chosen date)
+Route::get('/orrery', Orrery::class)->name('orrery');
 
 // Utility
 Route::get('/random', RandomObjectController::class)->name('random');

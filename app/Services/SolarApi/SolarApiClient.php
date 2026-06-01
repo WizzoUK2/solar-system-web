@@ -16,6 +16,7 @@ use App\Services\SolarApi\Data\Stats;
 use App\Services\SolarApi\Exceptions\SolarApiException;
 use App\Services\SolarApi\Exceptions\SolarApiUnavailableException;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -198,6 +199,58 @@ class SolarApiClient
         );
 
         return is_array($data) ? Position::fromArray($data) : null;
+    }
+
+    /**
+     * Positions for several bodies at one date, fetched concurrently. Cache
+     * hits are served without a request; only the misses go out, in a single
+     * HTTP pool. Used by the orrery, where a page needs ~10 positions at once.
+     *
+     * @param  list<string>  $ids
+     * @return array<string,?Position> keyed by the id passed in
+     */
+    public function positionsBatch(array $ids, string $date): array
+    {
+        $ids = array_values(array_unique($ids));
+        $out = [];
+        $missing = [];
+
+        foreach ($ids as $id) {
+            $key = $this->cacheKey('/positions/'.$id, ['date' => $date]);
+            $entry = Cache::get($key);
+            if (is_array($entry) && array_key_exists('soft', $entry)) {
+                $out[$id] = $entry['value'];
+            } else {
+                $missing[$id] = $key;
+            }
+        }
+
+        if ($missing !== []) {
+            $responses = Http::pool(fn ($pool) => array_map(
+                fn (string $id) => $pool->as($id)
+                    ->baseUrl($this->baseUrl)
+                    ->timeout($this->timeout)
+                    ->acceptJson()
+                    ->get('/positions/'.$this->encodePath($id), ['date' => $date]),
+                array_keys($missing),
+            ));
+
+            foreach ($missing as $id => $key) {
+                $response = $responses[$id] ?? null;
+                // A pooled connection failure arrives as a Throwable, not a throw.
+                $value = ($response instanceof Response && $response->successful())
+                    ? $response->json()
+                    : null;
+
+                Cache::put($key, ['value' => $value, 'soft' => time() + $this->ttl['positions']], $this->ttl['positions'] * 6);
+                $out[$id] = $value;
+            }
+        }
+
+        return array_map(
+            static fn ($value) => is_array($value) ? Position::fromArray($value) : null,
+            $out,
+        );
     }
 
     // ------------------------------------------------------------------

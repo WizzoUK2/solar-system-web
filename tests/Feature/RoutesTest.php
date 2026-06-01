@@ -20,9 +20,18 @@ it('renders every public P0 route', function (string $uri) {
     'comets' => '/comets',
     'tnos' => '/tnos',
     'search' => '/search?q=ceres',
+    'orrery' => '/orrery',
     'about' => '/about',
     'api' => '/api',
 ]);
+
+it('plots bodies on the orrery for a given date', function () {
+    $this->get('/orrery?date=2026-06-01')
+        ->assertOk()
+        ->assertSee('Orrery')
+        ->assertSee('<svg', escape: false)
+        ->assertSee('Saturn');
+});
 
 it('puts the object name and structured data on a detail page', function () {
     $this->get('/objects/planet-saturn')
