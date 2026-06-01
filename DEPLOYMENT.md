@@ -7,7 +7,7 @@ container — no provider-specific assumptions.
 
 ## Requirements
 
-- PHP **8.3+** with the usual Laravel extensions (`mbstring`, `openssl`, `curl`, `dom`, …)
+- PHP **8.4+** with the usual Laravel extensions (`mbstring`, `openssl`, `curl`, `dom`, …)
 - Composer
 - Node + npm — **build time only**, not at runtime
 - A reachable Solar System DB API (`API_BASE_URL`)

@@ -15,7 +15,7 @@ The full product brief lives in [`BRIEF.md`](BRIEF.md). Deployment notes are in
 
 - **Laravel 13** + **Livewire 4** (full-page components) + **Alpine** (bundled with Livewire)
 - **Tailwind CSS 4** via the Vite plugin; self-hosted **Inter** + **Newsreader** fonts (no runtime Google Fonts)
-- **PHP 8.3+** (developed on 8.4)
+- **PHP 8.4+** (the current Laravel 13 / Symfony 8.1 dependency graph requires 8.4.1)
 - **Pest 4** for tests
 - No database: sessions and cache use the filesystem. All data is fetched from the API and cached.
 
