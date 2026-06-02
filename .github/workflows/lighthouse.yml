@@ -1,0 +1,81 @@
+name: Lighthouse
+
+# Advisory: audits real, fully-rendered pages against a live backend. Not a
+# required check — CI-throttled performance varies — but it gates the stable
+# categories (accessibility, SEO) and surfaces regressions on the rest.
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, ctype, curl, dom, fileinfo, intl, imagick
+          coverage: none
+
+      - name: Install PHP dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Build assets
+        run: |
+          npm ci
+          npm run build
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Start the backend API
+        run: |
+          git clone --depth 1 https://github.com/WizzoUK2/solar-system-db.git backend
+          python -m pip install --quiet "fastapi" "uvicorn[standard]" "slowapi"
+          cd backend && API_PORT=8003 nohup python api/main.py > /tmp/api.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8003/healthz >/dev/null && break; sleep 1; done
+          curl -sf http://127.0.0.1:8003/healthz
+
+      - name: Prepare the app
+        run: |
+          cp .env.example .env
+          sed -i 's#^APP_ENV=.*#APP_ENV=local#' .env
+          sed -i 's#^APP_DEBUG=.*#APP_DEBUG=false#' .env
+          sed -i 's#^APP_URL=.*#APP_URL=http://127.0.0.1:8000#' .env
+          sed -i 's#^API_BASE_URL=.*#API_BASE_URL=http://127.0.0.1:8003/api/v1#' .env
+          php artisan key:generate
+          php artisan config:clear
+
+      - name: Start the app
+        run: |
+          nohup php artisan serve --port=8000 > /tmp/app.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8000/ -o /dev/null && break; sleep 1; done
+          curl -sf http://127.0.0.1:8000/ -o /dev/null && echo "app up"
+
+      - name: Run Lighthouse
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            http://127.0.0.1:8000/
+            http://127.0.0.1:8000/objects/planet-saturn
+          configPath: ./.lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
