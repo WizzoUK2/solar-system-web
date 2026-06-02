@@ -20,6 +20,7 @@ final readonly class Ring
         public ?string $notes,
     ) {}
 
+    /** @param array<string,mixed> $d */
     public static function fromArray(array $d): self
     {
         return new self(

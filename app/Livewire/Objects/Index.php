@@ -9,6 +9,7 @@ use App\Services\SolarApi\Exceptions\SolarApiException;
 use App\Services\SolarApi\SolarApiClient;
 use App\Support\ObjectType;
 use App\Support\Seo;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -54,7 +55,7 @@ final class Index extends Component
         $this->reset(['type', 'parent', 'size', 'neo', 'named', 'page']);
     }
 
-    public function render(SolarApiClient $api)
+    public function render(SolarApiClient $api): View
     {
         app(Seo::class)
             ->title(__('Browse all objects'))

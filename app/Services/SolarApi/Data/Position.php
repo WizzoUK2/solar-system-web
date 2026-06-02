@@ -30,6 +30,7 @@ final readonly class Position
         public ?string $accuracyNote,
     ) {}
 
+    /** @param array<string,mixed> $d */
     public static function fromArray(array $d): self
     {
         return new self(

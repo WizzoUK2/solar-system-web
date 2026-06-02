@@ -6,13 +6,14 @@ namespace App\Livewire;
 
 use App\Support\Links;
 use App\Support\Seo;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 #[Layout('components.layouts.app')]
 final class ApiPage extends Component
 {
-    public function render()
+    public function render(): View
     {
         app(Seo::class)
             ->title(__('Use the API'))

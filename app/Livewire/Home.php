@@ -8,6 +8,7 @@ use App\Services\SolarApi\Data\Stats;
 use App\Services\SolarApi\Exceptions\SolarApiException;
 use App\Services\SolarApi\SolarApiClient;
 use App\Support\Seo;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -27,7 +28,7 @@ final class Home extends Component
         'moon-triton', 'moon-enceladus', 'moon-phobos', 'comet-1p-halley',
     ];
 
-    public function render(SolarApiClient $api)
+    public function render(SolarApiClient $api): View
     {
         app(Seo::class)
             ->title(null)

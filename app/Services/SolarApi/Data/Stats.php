@@ -25,6 +25,7 @@ final readonly class Stats
         public ?array $lastBuild,
     ) {}
 
+    /** @param array<string,mixed> $d */
     public static function fromArray(array $d): self
     {
         $counts = [];

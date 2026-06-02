@@ -23,6 +23,7 @@ final readonly class Source
         public ?int $count = null,
     ) {}
 
+    /** @param array<string,mixed> $d */
     public static function fromArray(array $d): self
     {
         return new self(

@@ -19,6 +19,7 @@ final readonly class VisualProperties
         public ?string $dominantColourHex,
     ) {}
 
+    /** @param array<string,mixed> $d */
     public static function fromArray(array $d): self
     {
         return new self(

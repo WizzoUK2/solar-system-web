@@ -11,6 +11,7 @@ namespace App\Services\SolarApi\Data\Concerns;
  */
 trait CastsValues
 {
+    /** @param array<string,mixed> $data */
     protected static function float(array $data, string $key): ?float
     {
         $value = $data[$key] ?? null;
@@ -18,6 +19,7 @@ trait CastsValues
         return is_numeric($value) ? (float) $value : null;
     }
 
+    /** @param array<string,mixed> $data */
     protected static function str(array $data, string $key): ?string
     {
         $value = $data[$key] ?? null;
@@ -29,11 +31,13 @@ trait CastsValues
         return (string) $value;
     }
 
+    /** @param array<string,mixed> $data */
     protected static function bool(array $data, string $key): bool
     {
         return (bool) ($data[$key] ?? false);
     }
 
+    /** @param array<string,mixed> $data */
     protected static function int(array $data, string $key): ?int
     {
         $value = $data[$key] ?? null;

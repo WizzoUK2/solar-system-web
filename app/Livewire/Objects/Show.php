@@ -10,6 +10,7 @@ use App\Services\SolarApi\Exceptions\SolarApiException;
 use App\Services\SolarApi\Exceptions\SolarApiUnavailableException;
 use App\Services\SolarApi\SolarApiClient;
 use App\Support\Seo;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -47,7 +48,7 @@ final class Show extends Component
         $this->sortDir = 'asc';
     }
 
-    public function render(SolarApiClient $api)
+    public function render(SolarApiClient $api): View
     {
         // Resolve the object. A genuine miss is a 404; an unreachable backend
         // is a degradation panel, not a 404.

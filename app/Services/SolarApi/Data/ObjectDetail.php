@@ -37,6 +37,7 @@ final readonly class ObjectDetail
         public array $sources,
     ) {}
 
+    /** @param array<string,mixed> $d */
     public static function fromArray(array $d): self
     {
         $orbital = is_array($d['orbital'] ?? null) ? OrbitalElements::fromArray($d['orbital']) : null;
