@@ -1,0 +1,11 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - app
+    # The codebase is small; a single worker avoids intermittent parallel
+    # worker crashes and keeps analysis deterministic across machines.
+    parallel:
+        maximumNumberOfProcesses: 1
