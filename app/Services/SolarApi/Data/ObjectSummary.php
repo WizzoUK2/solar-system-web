@@ -39,6 +39,7 @@ final readonly class ObjectSummary
         public bool $isPha,
     ) {}
 
+    /** @param array<string,mixed> $d */
     public static function fromArray(array $d): self
     {
         return new self(

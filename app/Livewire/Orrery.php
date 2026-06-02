@@ -8,6 +8,7 @@ use App\Services\SolarApi\Data\Position;
 use App\Services\SolarApi\SolarApiClient;
 use App\Support\Seo;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -66,7 +67,7 @@ final class Orrery extends Component
         $this->date = CarbonImmutable::parse($this->date)->addDays($days)->toDateString();
     }
 
-    public function render(SolarApiClient $api)
+    public function render(SolarApiClient $api): View
     {
         app(Seo::class)
             ->title(__('Orrery'))

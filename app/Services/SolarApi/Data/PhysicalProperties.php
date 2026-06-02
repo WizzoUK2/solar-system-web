@@ -22,6 +22,7 @@ final readonly class PhysicalProperties
         public ?float $escapeVelocityKmS,
     ) {}
 
+    /** @param array<string,mixed> $d */
     public static function fromArray(array $d): self
     {
         return new self(

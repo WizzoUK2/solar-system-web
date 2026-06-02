@@ -28,6 +28,7 @@ final class RefreshSolarCache implements ShouldQueue
     /** Only one refresh per key should be queued at a time. */
     public int $tries = 1;
 
+    /** @param array<string,mixed> $query */
     public function __construct(
         public string $path,
         public array $query,

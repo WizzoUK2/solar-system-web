@@ -30,6 +30,7 @@ final readonly class OrbitalElements
         public ?float $meanMotionDegPerDay,
     ) {}
 
+    /** @param array<string,mixed> $d */
     public static function fromArray(array $d): self
     {
         return new self(

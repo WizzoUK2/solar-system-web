@@ -303,6 +303,8 @@ class SolarApiClient
      * Serve a cached response, refreshing it in the background once it goes
      * soft-stale. A cold miss fetches synchronously. The hard TTL is a multiple
      * of the soft TTL so a struggling backend can't leave a cold cache.
+     *
+     * @param  array<string,mixed>  $query
      */
     private function cachedGet(string $path, array $query, int $ttl): mixed
     {
@@ -325,6 +327,8 @@ class SolarApiClient
 
     /**
      * Fetch fresh and store it. Public so {@see RefreshSolarCache} can call it.
+     *
+     * @param  array<string,mixed>  $query
      */
     public function refreshInto(string $path, array $query, string $key, int $ttl): mixed
     {
@@ -339,6 +343,9 @@ class SolarApiClient
      * Low-level GET. Returns the decoded body, or null for a 404. Throws
      * {@see SolarApiUnavailableException} when the host can't be reached and
      * {@see SolarApiException} for other non-2xx responses.
+     *
+     * @param  array<string,mixed>  $query
+     * @return array<mixed>|null
      */
     private function request(string $path, array $query = []): ?array
     {
@@ -374,7 +381,8 @@ class SolarApiClient
     // ------------------------------------------------------------------
 
     /**
-     * @param  Paginated<mixed>  ...$_
+     * @param  list<array<string,mixed>>  $rows
+     * @param  callable(array<string,mixed>): mixed  $map
      * @return Paginated<mixed>
      */
     private function paginate(array $rows, int $limit, int $offset, callable $map): Paginated
@@ -425,6 +433,7 @@ class SolarApiClient
         return $clean;
     }
 
+    /** @param array<string,mixed> $query */
     private function cacheKey(string $path, array $query): string
     {
         ksort($query);

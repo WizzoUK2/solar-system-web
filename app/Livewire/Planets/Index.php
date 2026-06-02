@@ -7,13 +7,14 @@ namespace App\Livewire\Planets;
 use App\Services\SolarApi\Exceptions\SolarApiException;
 use App\Services\SolarApi\SolarApiClient;
 use App\Support\Seo;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 #[Layout('components.layouts.app')]
 final class Index extends Component
 {
-    public function render(SolarApiClient $api)
+    public function render(SolarApiClient $api): View
     {
         app(Seo::class)
             ->title(__('The planets'))
