@@ -21,6 +21,9 @@ final class RobotsController extends Controller
             '',
         ];
 
-        return response(implode("\n", $lines), 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+        return response(implode("\n", $lines), 200, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
     }
 }

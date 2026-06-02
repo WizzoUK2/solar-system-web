@@ -69,6 +69,16 @@ If you use a queue for background cache refresh, run a worker:
 php artisan queue:work --sleep=3 --tries=1
 ```
 
+## Headers
+
+`SetResponseHeaders` middleware adds baseline security headers to every
+response (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
+`Permissions-Policy`, `Cross-Origin-Opener-Policy`). HTML pages are left
+`no-store` by Livewire (their state is server-rendered per request); the
+sitemap and `robots.txt` send a public `Cache-Control`. If you want the CDN to
+cache rendered HTML too, do it at the edge (e.g. a Cloudflare cache rule for
+GET text/html), since those responses also carry a session cookie.
+
 ## Health & resilience
 
 - If the backend is unreachable the site still serves every page (with a calm

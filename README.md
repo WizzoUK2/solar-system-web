@@ -1,5 +1,7 @@
 # Solar — solar-system-db front end
 
+[![CI](https://github.com/WizzoUK2/solar-system-web/actions/workflows/ci.yml/badge.svg)](https://github.com/WizzoUK2/solar-system-web/actions/workflows/ci.yml)
+
 A clean, public, server-rendered astronomy reference for the solar system:
 planets, moons, dwarf planets, asteroids, comets, trans-Neptunian objects and
 planetary rings. It is a **front end only** — all data comes from the read-only
