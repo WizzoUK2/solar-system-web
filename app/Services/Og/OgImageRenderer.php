@@ -100,7 +100,7 @@ final class OgImageRenderer
         while ($size > $min) {
             $draw->setFontSize($size);
             $metrics = $img->queryFontMetrics($draw, $text);
-            if (($metrics['textWidth'] ?? 0) <= $maxWidth) {
+            if ((float) ($metrics['textWidth'] ?? 0) <= $maxWidth) {
                 break;
             }
             $size -= 6;
@@ -115,13 +115,13 @@ final class OgImageRenderer
         $draw->setFont($font);
         $draw->setFontSize($size);
 
-        if (($img->queryFontMetrics($draw, $text)['textWidth'] ?? 0) <= $maxWidth) {
+        if ((float) ($img->queryFontMetrics($draw, $text)['textWidth'] ?? 0) <= $maxWidth) {
             return $text;
         }
 
         while (mb_strlen($text) > 1) {
             $text = mb_substr($text, 0, -1);
-            if (($img->queryFontMetrics($draw, $text.'…')['textWidth'] ?? 0) <= $maxWidth) {
+            if ((float) ($img->queryFontMetrics($draw, $text.'…')['textWidth'] ?? 0) <= $maxWidth) {
                 break;
             }
         }

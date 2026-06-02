@@ -26,12 +26,12 @@ final class OgImageController extends Controller
 {
     public function __invoke(string $slug, SolarApiClient $api, OgImageRenderer $renderer): Response
     {
-        $disk = Storage::disk(config('og.disk'));
-        $path = 'og/'.config('og.version').'/'.sha1($slug).'.png';
+        $disk = Storage::disk((string) config('og.disk'));
+        $path = 'og/'.(string) config('og.version').'/'.sha1($slug).'.png';
 
         try {
-            if ($disk->exists($path)) {
-                return $this->png($disk->get($path));
+            if ($disk->exists($path) && ($cached = $disk->get($path)) !== null) {
+                return $this->png($cached);
             }
 
             $object = $api->object($slug);
@@ -67,7 +67,7 @@ final class OgImageController extends Controller
     {
         return response($bytes, 200, [
             'Content-Type' => 'image/png',
-            'Cache-Control' => 'public, max-age='.config('og.ttl').', immutable',
+            'Cache-Control' => 'public, max-age='.(int) config('og.ttl').', immutable',
         ]);
     }
 
