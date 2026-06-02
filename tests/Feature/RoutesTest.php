@@ -42,6 +42,15 @@ it('puts the object name and structured data on a detail page', function () {
         ->assertSee('canonical', escape: false);
 });
 
+it('advertises a favicon and a default share image', function () {
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('favicon.svg', escape: false)
+        ->assertSee('og:image', escape: false)
+        ->assertSee('images/og-default.png', escape: false)
+        ->assertSee('twitter:card', escape: false);
+});
+
 it('returns a branded 404 for an unknown object when the backend is healthy', function () {
     $this->get('/objects/missing-object')
         ->assertNotFound()

@@ -6,6 +6,9 @@
     <meta name="theme-color" content="#0a0e1a" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#f7f5ef" media="(prefers-color-scheme: light)">
 
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="mask-icon" href="{{ asset('favicon.svg') }}" color="#e0b872">
+
     {{-- Set the theme before first paint to avoid a flash. Default: dark. --}}
     <script>
         (function () {
