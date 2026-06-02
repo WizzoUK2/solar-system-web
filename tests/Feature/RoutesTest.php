@@ -42,8 +42,12 @@ it('puts the object name and structured data on a detail page', function () {
         ->assertSee('canonical', escape: false);
 });
 
-it('returns 404 for an unknown object when the backend is healthy', function () {
-    $this->get('/objects/missing-object')->assertNotFound();
+it('returns a branded 404 for an unknown object when the backend is healthy', function () {
+    $this->get('/objects/missing-object')
+        ->assertNotFound()
+        ->assertSee('404')
+        ->assertSee('Lost in space')
+        ->assertSee(config('site.name'), escape: false);
 });
 
 it('redirects /random to an object detail page', function () {
