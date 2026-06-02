@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\OgImageController;
 use App\Http\Controllers\RandomObjectController;
 use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
@@ -39,6 +40,11 @@ Route::get('/orrery', Orrery::class)->name('orrery');
 
 // Utility
 Route::get('/random', RandomObjectController::class)->name('random');
+
+// Per-object Open Graph share card (rendered + cached on object detail pages)
+Route::get('/og/objects/{slug}.png', OgImageController::class)
+    ->where('slug', '[A-Za-z0-9\-]+')   // keep the .png suffix literal
+    ->name('og.object');
 
 // Editorial / developer pages
 Route::get('/about', AboutPage::class)->name('about');

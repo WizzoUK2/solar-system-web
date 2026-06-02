@@ -7,7 +7,7 @@ container — no provider-specific assumptions.
 
 ## Requirements
 
-- PHP **8.4+** with the usual Laravel extensions (`mbstring`, `openssl`, `curl`, `dom`, …)
+- PHP **8.4+** with the usual Laravel extensions (`mbstring`, `openssl`, `curl`, `dom`, …) plus **`imagick`** (renders the per-object OG share cards)
 - Composer
 - Node + npm — **build time only**, not at runtime
 - A reachable Solar System DB API (`API_BASE_URL`)
@@ -28,6 +28,8 @@ Copy `.env.example` to `.env` and set at least:
 | `SESSION_DRIVER` | no     | `file`                                                                |
 | `QUEUE_CONNECTION` | no   | `sync` works; a real queue (`redis`/`database`) enables true background cache refresh |
 | `CONTACT_EMAIL` | no      | Surfaced on `/about`                                                  |
+| `OG_DISK`      | no       | Disk for cached OG cards — `local` (default) or `s3`                  |
+| `AWS_*`        | if `s3`  | Ceph RGW bucket + keys for OG storage — see [`docs/CEPH-S3.md`](docs/CEPH-S3.md) |
 | `API_DOCS_URL` | no       | Override the backend `/docs` link; otherwise derived from `API_BASE_URL` |
 
 ## Build & release
