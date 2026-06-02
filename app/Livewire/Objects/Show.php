@@ -154,6 +154,7 @@ final class Show extends Component
             ->description($description)
             ->type('article')
             ->canonical(route('objects.show', $object->id))
+            ->image(route('og.object', $object->id))   // per-object share card
             ->jsonLd($this->schema($object, $description));
     }
 
