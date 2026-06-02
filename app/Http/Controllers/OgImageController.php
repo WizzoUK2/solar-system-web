@@ -6,7 +6,6 @@ namespace App\Http\Controllers;
 
 use App\Services\Og\OgImageRenderer;
 use App\Services\SolarApi\Data\ObjectDetail;
-use App\Services\SolarApi\Exceptions\SolarApiException;
 use App\Services\SolarApi\SolarApiClient;
 use App\Support\ObjectType;
 use Illuminate\Http\Response;
@@ -48,7 +47,7 @@ final class OgImageController extends Controller
             $disk->put($path, $png);
 
             return $this->png($png);
-        } catch (SolarApiException|Throwable) {
+        } catch (Throwable) {
             return $this->fallback();
         }
     }
