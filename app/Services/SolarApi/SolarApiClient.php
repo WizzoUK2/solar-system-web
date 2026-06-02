@@ -392,7 +392,7 @@ class SolarApiClient
             $rows = array_slice($rows, 0, $limit);
         }
 
-        return new Paginated(array_map($map, array_values($rows)), $limit, $offset, $hasMore);
+        return new Paginated(array_map($map, $rows), $limit, $offset, $hasMore);
     }
 
     /**
