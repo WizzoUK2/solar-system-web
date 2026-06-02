@@ -1,5 +1,18 @@
 @import 'tailwindcss';
 
+/*
+ * Self-hosted fonts, vendored via @fontsource (latin subset, font-display:swap).
+ * Bundled by Vite at build time — no runtime Google Fonts and no network fetch
+ * during the build. Inter for body, Newsreader serif for headings.
+ */
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import '@fontsource/inter/latin-700.css';
+@import '@fontsource/newsreader/latin-400.css';
+@import '@fontsource/newsreader/latin-500.css';
+@import '@fontsource/newsreader/latin-600.css';
+
 @source '../views/**/*.blade.php';
 @source '../../app/Livewire/**/*.php';
 

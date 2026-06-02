@@ -18,9 +18,6 @@
 
     <x-seo />
 
-    {{-- Self-hosted fonts: preload links + inlined @font-face (no runtime Google Fonts). --}}
-    {{ Illuminate\Support\Facades\Vite::fonts() }}
-
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
