@@ -71,15 +71,27 @@ If you use a queue for background cache refresh, run a worker:
 php artisan queue:work --sleep=3 --tries=1
 ```
 
-## Headers
+## Headers & edge caching
 
 `SetResponseHeaders` middleware adds baseline security headers to every
 response (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
-`Permissions-Policy`, `Cross-Origin-Opener-Policy`). HTML pages are left
-`no-store` by Livewire (their state is server-rendered per request); the
-sitemap and `robots.txt` send a public `Cache-Control`. If you want the CDN to
-cache rendered HTML too, do it at the edge (e.g. a Cloudflare cache rule for
-GET text/html), since those responses also carry a session cookie.
+`Permissions-Policy`, `Cross-Origin-Opener-Policy`).
+
+For caching it splits pages in two:
+
+- **Non-interactive pages** (`/`, `/planets`, `/about`, `/api`,
+  `/dwarf-planets`) are served **cookie-less** with
+  `Cache-Control: public, max-age=120, s-maxage=600, stale-while-revalidate=86400`,
+  so a shared cache (Cloudflare) can store one copy for everyone. The sitemap
+  and `robots.txt` are public-cacheable too.
+- **Interactive pages** (filters, search, sort, pagination) keep Livewire's
+  `no-store` — they need the per-request session for CSRF on `wire:*` updates.
+
+To turn this on at the edge, add a Cloudflare **Cache Rule**: *Eligible for
+cache* + *Respect origin* TTL for the paths above (or simply "cache everything"
+scoped to those routes). Because the app already strips the session cookie on
+them, Cloudflare will cache without cookie contamination. Leave everything else
+(and `/livewire/*`) on the default bypass.
 
 ## Health & resilience
 

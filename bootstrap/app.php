@@ -13,12 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Prepended so it runs outermost on the response — after Livewire's
-        // back-button-cache middleware — letting our public Cache-Control win on
-        // the initial full-page GET (Livewire's AJAX POSTs stay uncached).
-        $middleware->web(prepend: [
-            SetResponseHeaders::class,
-        ]);
+        // Global prepend so on the response it runs outermost — after Livewire's
+        // globally-pushed back-button-cache middleware — letting our public
+        // Cache-Control win on the cacheable routes (interactive pages keep
+        // Livewire's no-store).
+        $middleware->prepend(SetResponseHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

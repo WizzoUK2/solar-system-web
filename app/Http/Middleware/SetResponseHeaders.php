@@ -9,22 +9,38 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Adds baseline security headers to every response.
+ * Adds baseline security headers to every response, and makes the
+ * non-interactive public pages edge-cacheable.
  *
- * No Content-Security-Policy is set: the site relies on a couple of inline
- * scripts (the no-FOUC theme switch) and inline event handlers, so a strict
- * CSP would need refactoring first — out of scope for a read-only public site.
+ * Registered as a *global prepend* so on the response path it runs outermost —
+ * after Livewire's back-button-cache middleware — letting it overwrite the
+ * `no-store` that Livewire forces, on the routes where caching is safe.
  *
- * HTML page caching is intentionally left to Livewire (which sets `no-store`
- * on full-page responses); the cacheable, non-Livewire surfaces — the sitemap
- * and robots.txt — set their own Cache-Control in their controllers.
+ * No Content-Security-Policy is set: the site uses a couple of inline scripts
+ * (the no-FOUC theme switch) and inline handlers, so a strict CSP would need
+ * refactoring first.
  */
 final class SetResponseHeaders
 {
+    /**
+     * Routes with no Livewire round-trips — safe to serve cookie-less and cache
+     * at the edge. Interactive pages (filters, search, sort, pagination) are
+     * deliberately excluded: they need the session for CSRF on wire:* updates.
+     */
+    private const CACHEABLE_ROUTES = ['home', 'planets.index', 'about', 'api', 'dwarf-planets'];
+
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
 
+        $this->addSecurityHeaders($response);
+        $this->makeCacheable($request, $response);
+
+        return $response;
+    }
+
+    private function addSecurityHeaders(Response $response): void
+    {
         $headers = [
             'X-Content-Type-Options' => 'nosniff',
             'X-Frame-Options' => 'SAMEORIGIN',
@@ -38,7 +54,33 @@ final class SetResponseHeaders
                 $response->headers->set($name, $value);
             }
         }
+    }
 
-        return $response;
+    private function makeCacheable(Request $request, Response $response): void
+    {
+        if (! $request->isMethod('GET') || $response->getStatusCode() !== 200) {
+            return;
+        }
+
+        if (! in_array($request->route()?->getName(), self::CACHEABLE_ROUTES, true)) {
+            return;
+        }
+
+        if (! str_contains((string) $response->headers->get('Content-Type', ''), 'text/html')) {
+            return;
+        }
+
+        // Drop the session cookie so a shared cache (and the browser) can't tie
+        // the page to one visitor — these routes don't use the session.
+        foreach ($response->headers->getCookies() as $cookie) {
+            $response->headers->removeCookie($cookie->getName(), $cookie->getPath(), $cookie->getDomain());
+        }
+
+        // Short browser cache; longer shared (CDN) cache; never-blocking refresh.
+        // The catalogue only changes nightly, so this is comfortably safe.
+        $response->headers->set(
+            'Cache-Control',
+            'public, max-age=120, s-maxage=600, stale-while-revalidate=86400',
+        );
     }
 }
